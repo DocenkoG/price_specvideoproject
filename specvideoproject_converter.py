@@ -23,7 +23,9 @@ def getCell(row, colName, sheet):
     ccc = sheet.cell(row=row, column=in_columns_j[colName])
     cellType  = ccc.data_type
     cellValue = ccc.value
-    if cellValue == None : 
+    if (cellValue == None) and (colName in ('закупка','продажа','цена1', 'цена2'))  : 
+        ss = '0'
+    elif cellValue == None : 
         ss = ''
     elif (cellType in ('n')) and (colName in ('закупка','продажа','цена1', 'цена2')) :      # numeric
         if int(cellValue) == cellValue:
@@ -153,7 +155,11 @@ def convert2csv( myname ):
                         else : 
                             # вычисляемое поле
                             #print(strname)
-                            if strname == 'наименование' :
+                            if strname == 'закупка' :
+                                s1 = getCell(row=i, colName='цена1', sheet=sh)
+                                print(s1)
+                                ss = str(0.57 * float(s1))
+                            elif strname == 'наименование' :
                                 s1 = getCell(row=i, colName='код производителя', sheet=sh)
                                 s2 = getCell(row=i, colName='описание', sheet=sh)
                                 ss = quoted(s1 + ' ' + brend + ' ' + s2)
