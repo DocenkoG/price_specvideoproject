@@ -97,7 +97,7 @@ def convert2csv( myname ):
                             elif outColName == 'описание' :      # = описание "/" бренд + код товара + SAP "/" комментарии 
                                 s1 = getCellXlsx(row=i, col=in_columns_j['описание'],    isDigit='N', sheet=sh) 
                                 s2 = getCellXlsx(row=i, col=in_columns_j['код товара'],  isDigit='N', sheet=sh) 
-                                s3 = getCellXlsx(row=i, col=in_columns_j['SAP'],         isDigit='N', sheet=sh) 
+                                s3 = getCellXlsx(row=i, col=in_columns_j['sap'],         isDigit='N', sheet=sh) 
                                 s4 = getCellXlsx(row=i, col=in_columns_j['комментарии'], isDigit='N', sheet=sh) 
                                 ss = s1+' / '+brend+' '+s2+' '+s3+' / '+s4
                             else :
