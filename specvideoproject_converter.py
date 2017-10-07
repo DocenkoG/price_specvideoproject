@@ -8,37 +8,9 @@ import sys
 import configparser
 import time
 import openpyxl                       # Для .xlsx
-# import xlrd                             # для .xls
+# import xlrd                         # для .xls
+from   price_tools import getCellXlsx, quoted, dump_cell, currencyType, subInParentheses
 
-
-def make_loger():
-    global log
-    logging.config.fileConfig('logging.cfg')
-    log = logging.getLogger('logFile')
-
-
-
-def getCell(row, colName, sheet):
-    global in_columns_j
-    ccc = sheet.cell(row=row, column=in_columns_j[colName])
-    cellType  = ccc.data_type
-    cellValue = ccc.value
-    if (cellValue == None) and (colName in ('закупка','продажа','цена1', 'цена2'))  : 
-        ss = '0'
-    elif cellValue == None : 
-        ss = ''
-    elif (cellType in ('n')) and (colName in ('закупка','продажа','цена1', 'цена2')) :      # numeric
-        if int(cellValue) == cellValue:
-            ss = str(int(cellValue))
-        else :
-            ss = str(cellValue)
-    elif (cellType !='n')    and (colName in ('закупка','продажа','цена1', 'цена2')) :
-        ss = '0' 
-    elif cellType == 's' :
-        ss = cellValue 
-    else:
-        ss = str(cellValue)
-    return ss
 
 
 def convert2csv( myname ):
@@ -70,7 +42,6 @@ def convert2csv( myname ):
     log.debug('Открываю файл '+ FilenameIn)
     book = openpyxl.load_workbook(filename = FilenameIn, read_only=False, keep_vba=False, data_only=False)
 #   book = xlrd.open_workbook( FilenameIn.encode('cp1251'), formatting_info=True)
-#   book = xlrd.open_workbook( os.path.join( mydir, FilenameIn.encode('cp1251')), formatting_info=True)
     
     sheetNames = book.get_sheet_names()
     #sheetNames = set(sheetNames)
@@ -80,7 +51,7 @@ def convert2csv( myname ):
     brend = 'BOSCH'
     for SheetName in sheetNames :                                # Организую цикл по страницам
 
-        if SheetName == 'Кабины для синхроперевода' : 
+        if SheetName not in ('BOSCH VS','BOSCH PA','BOSCH CONGRESS') : 
             continue
         grpName = SheetName
         log.debug('Устанавливаю страницу ' + SheetName )
@@ -95,27 +66,6 @@ def convert2csv( myname ):
                 if ccc.value == None :
                     #print (i, colGrp, 'Пусто!!!')
                     continue
-# ----------------------------------------------------------------------------------------------------------------
-#   sh = book.sheet_by_name( SheetName )                     # xls
-       
-                '''                                    # Атрибуты шрифта для настройки конфига
-                print( 'Строка', i, ccc.value,)
-                print( 'font=',   ccc.font.name,)
-                print( 'bold=',   ccc.font.bold,)
-                print( 'italic=', ccc.font.italic,)
-                print( 'size=',   ccc.font.size)
-                #print( 'colour=', ccc.font.color.rgb)
-                print( 'background=',ccc.fill.fill_type)
-                print( 'backgroundColor1=', ccc.fill.start_color)
-                print( 'backgroundColor2=', ccc.fill.end_color)
-                print( 'Строка', i, 'столбец', colGrp, 'значение', ccc.value)
-                continue
-                '''
-
-    #            if  GrpFontSize <= ccc.font.size :                     # Группа
-    #                grpName = quoted(sh.cell(row=i, column=colGrp).value)
-    #                subGrpName = ''
-    #                print('группа', grpName)
     
                 if True == ccc.font.bold :                              # Подгруппа
                     subGrpName = quoted(sh.cell(row=i,column=colSGrp).value)
@@ -128,52 +78,31 @@ def convert2csv( myname ):
                     #print( 'Пустая строка:', sh.cell(row=i, column=in_columns_j['закупка']).value )
         
                 elif RegularFontSize == ccc.font.size :                 # Информационная строка
-                    ccc = sh.cell(row=i, column=out_columns_j['код'])
-                    code = ccc.value
-                    sss = []                                            # формируемая строка для вывода в файл
-                    for strname in out_columns_names :
-                        if strname in out_columns_j :
-                            # берем значение из соответствующей ячейки файла
-                            j = out_columns_j[strname] 
-                            ccc = sh.cell(row=i, column=j)
-                            cellType  = ccc.data_type
-                            cellValue = ccc.value
-    #                       print (cellType, cellValue)
-                            if cellValue == None : 
-                                ss = ''
-                            elif cellType in ('n') :                            # numeric
-                                if int(cellValue) == cellValue:
-                                    ss = str(int(cellValue))
-                                else :
-                                    ss = str(cellValue)
-                            elif strname in ('закупка','продажа','цена1', 'цена2') :
-                                ss = '0' 
-                            elif cellType == 's' :
-                                ss = quoted(cellValue ) 
+                    sss = []                                                    # формируемая строка для вывода в файл
+                    for outColName in out_columns_names :
+                        if outColName in out_columns_j :
+                            if outColName in ('закупка','продажа','цена') :
+                                ss = getCellXlsx(row=i, col=out_columns_j[outColName], isDigit='Y', sheet=sh) 
                             else:
-                                ss = ''
+                                ss = getCellXlsx(row=i, col=out_columns_j[outColName], isDigit='N', sheet=sh)
                         else : 
                             # вычисляемое поле
-                            #print(strname)
-                            if strname == 'закупка' :
-                                s1 = getCell(row=i, colName='цена1', sheet=sh)
-                                print(s1)
-                                ss = str(0.57 * float(s1))
-                            elif strname == 'наименование' :
-                                s1 = getCell(row=i, colName='код производителя', sheet=sh)
-                                s2 = getCell(row=i, colName='описание', sheet=sh)
-                                ss = quoted(s1 + ' ' + brend + ' ' + s2)
-                                #print(ss.encode(encoding='cp1251', errors='replace'))
-                            elif strname == 'описание' :
-                                s1 = getCell(row=i, colName='описание', sheet=sh)
-                                s2 = getCell(row=i, colName='код производителя', sheet=sh)
-                                s3 = getCell(row=i, colName='код', sheet=sh)
-                                s4 = getCell(row=i, colName='примечание', sheet=sh)
-                                ss = quoted(s1+' / '+brend+' '+s2+' '+s3+' / '+s4)
-                            else:
-                                ss = 'название вычисляемого поля = <' + strname +'>'
-                                pass
-                        sss.append(ss)
+                            if   outColName == 'закупка' :
+                                s1 = getCellXlsx(row=i, col=in_columns_j['цена'],        isDigit='Y', sheet=sh)
+                                ss = str(0.65 * float(s1))
+                            elif outColName == 'наименование' :  # = код товара + бренд + описание (через пробел)
+                                s1 = getCellXlsx(row=i, col=in_columns_j['код товара'],  isDigit='N', sheet=sh) 
+                                s2 = getCellXlsx(row=i, col=in_columns_j['описание'],    isDigit='N', sheet=sh) 
+                                ss = s1 +' '+ brend +' ' + s2
+                            elif outColName == 'описание' :      # = описание "/" бренд + код товара + SAP "/" комментарии 
+                                s1 = getCellXlsx(row=i, col=in_columns_j['описание'],    isDigit='N', sheet=sh) 
+                                s2 = getCellXlsx(row=i, col=in_columns_j['код товара'],  isDigit='N', sheet=sh) 
+                                s3 = getCellXlsx(row=i, col=in_columns_j['SAP'],         isDigit='N', sheet=sh) 
+                                s4 = getCellXlsx(row=i, col=in_columns_j['комментарии'], isDigit='N', sheet=sh) 
+                                ss = s1+' / '+brend+' '+s2+' '+s3+' / '+s4
+                            else :
+                                log.debug('Не определено вычисляемое поле: <' + outColName + '>' )
+                        sss.append( quoted( ss))
         
                     sss.append(brend)
                     sss.append(grpName)
@@ -184,7 +113,6 @@ def convert2csv( myname ):
             except Exception as e:
                 log.debug('Exception: <' + str(e) + '> при обработке строки ' + str(i) +'<' + '>' )
                 raise e
-
     
     f2 = open( FilenameOut, 'w', encoding='cp1251')
     f2.write(strHeader  + ',\n')
@@ -290,7 +218,7 @@ def config_read( myname ):
 
 
 
-def quoted(sss):
-    if ((',' in sss) or ('"' in sss) or ('\n' in sss))  and not(sss[0]=='"' and sss[-1]=='"') :
-        sss = '"'+sss.replace('"','""')+'"'
-    return sss
+def make_loger():
+    global log
+    logging.config.fileConfig('logging.cfg')
+    log = logging.getLogger('logFile')

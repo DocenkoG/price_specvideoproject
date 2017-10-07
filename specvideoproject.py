@@ -19,11 +19,6 @@ def make_loger():
     global log
     logging.config.fileConfig('logging.cfg')
     log = logging.getLogger('logFile')
-#    log.debug('test debug message from brullov')
-#    log.info( 'test info message from brullov')
-#    log.warn( 'test warn message from brullov')
-#    log.error('test error message from brullov')
-#    log.critical('test critical message')
 
 
 
