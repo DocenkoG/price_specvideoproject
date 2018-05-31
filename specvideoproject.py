@@ -9,9 +9,33 @@ import configparser
 import time
 import specvideoproject_converter
 import shutil
+import urllib.request
+import os, os.path
 
 global log
 global myname
+
+
+
+
+def download_urllib():
+    filePrice = u'specvideoproject.xlsx'  
+    urlPrice  =  'http://bosch-congress-system.ru/files/Price_bosch_all.xlsx'
+
+    sss = urllib.request.urlopen(urlPrice).read()       #Скачиваем сначала страницу
+    print(len(sss))
+
+    if os.path.exists(filePrice):
+        os.remove(filePrice)
+    f = open(filePrice, 'wb')                    #Теперь записываем файл
+    f.write(sss)
+    f.close()
+        
+    if os.path.exists('new_'+filePrice):
+        if os.path.exists('old_'+filePrice):
+           os.remove('old_'+filePrice)
+        os.rename('new_'+filePrice, 'old_'+filePrice)
+    os.rename(filePrice, 'new_'+filePrice)
 
 
 
@@ -29,6 +53,7 @@ def main( ):
     make_loger()
     log.info('------------  '+myname +'  ------------')
 
+    download_urllib()
 #    if  specvideoproect_downloader.download( myname ) :
     specvideoproject_converter.convert2csv( myname )
     shutil.copy2( myname + '.csv', 'c://AV_PROM/prices/' + myname +'/'+ myname + '.csv')
