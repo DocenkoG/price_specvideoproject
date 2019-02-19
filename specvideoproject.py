@@ -56,8 +56,6 @@ def main( ):
     download_urllib()
 #    if  specvideoproect_downloader.download( myname ) :
     specvideoproject_converter.convert2csv( myname )
-    shutil.copy2( myname + '.csv', 'c://AV_PROM/prices/' + myname +'/'+ myname + '.csv')
-    shutil.copy2( 'python.log',    'c://AV_PROM/prices/' + myname +'/python.log')
 
 if __name__ == '__main__':
     global  myname
