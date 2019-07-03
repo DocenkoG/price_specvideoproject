@@ -9,7 +9,7 @@ import configparser
 import time
 import openpyxl                       # Для .xlsx
 # import xlrd                         # для .xls
-from   price_tools import getCellXlsx, quoted, dump_cell, currencyType, subInParentheses
+from   price_tools_old import getCellXlsx, quoted, dump_cell, currencyType, subInParentheses
 
 
 
