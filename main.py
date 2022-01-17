@@ -146,7 +146,7 @@ def convert_excel2csv(cfg):
             #print( impValues )
             ccc1 = sheet.cell(row=i, column=in_cols_j['цена1']).value
 
-            if sheetName in ('BOSCH VS', 'BOSCH CONGRESS', 'BOSCH PA'):
+            if sheetName in ('VS', 'CO', 'PAVA'):
                 if (sheet.cell(row=i, column=in_cols_j['подгруппа']).font.b is True and
                     sheet.cell(row=i, column=in_cols_j['цена1']).value is None):          # подгруппа
                     subgrp = impValues['подгруппа']
